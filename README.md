@@ -1,43 +1,41 @@
-# Drowsiness Detection
+# Robust Real-Time Drowsiness & Yawn Detection
 
-## Overview
-- Real-time driver fatigue detector that streams frames from the default webcam, isolates the eye region with MediaPipe Face Mesh, and classifies it as open/closed using a TensorFlow CNN.
-- When the left eye stays closed for more than 20 consecutive frames, the app overlays a red alert and plays `alarm.mpeg` in a background thread via `playsound`.
+This project solves the "Domain Shift" problem (where a model trains well but fails on the webcam) by using **Smart Padding** and exact preprocessing alignment.
 
-## Requirements
-- Python 3.9+ and an accessible webcam
-- Dependencies: `opencv-python`, `numpy`, `tensorflow`, `mediapipe`, `playsound`
-- Trained models: `best_eye_model.keras` (preferred) or `best_eye_model.h5` fallback stored at the repo root
+## 📁 Project Structure
+*   `local_detector.py`: Main script for real-time webcam detection.
+*   `drowsiness_model.h5`: The trained MobileNetV2 model (Keras 2 format).
+*   `notebooks/`: Contains `train_on_cloud.ipynb` for retraining on Colab/Kaggle.
+*   `utils/`: 
+    *   `convert_model.py`: Converts Keras 3 `.keras` models to Keras 2 `.h5`.
+    *   `explore_config.py`: Debugging tool to inspect model layer architecture.
+*   `requirements.txt`: Dependencies for the project.
 
-Install packages with:
+## 1. Cloud Training
+To train the models without freezing your PC, use Google Colab or Kaggle:
+1. Open Google Colab and set Runtime to GPU.
+2. Upload the `notebooks/train_on_cloud.ipynb` file.
+3. Follow the instructions in the notebook to download the Kaggle dataset.
+4. Run the notebook! It will output `drowsiness_model.keras`.
+5. Download the `.keras` file into the root directory.
 
+## 2. Model Conversion
+If your local environment uses Keras 2/TensorFlow 2.x, run the conversion tool:
 ```bash
-pip install -r requirements.txt
+python utils/convert_model.py
 ```
+This will generate the `drowsiness_model.h5` file required by the detector.
 
-If `requirements.txt` is not available, install manually:
+## 3. Local Real-Time Detection
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Run the detector:
+   ```bash
+   python local_detector.py
+   ```
 
-```bash
-pip install opencv-python numpy tensorflow mediapipe playsound
-```
-
-## Usage
-1. Place the eye model files (`best_eye_model.keras` or `best_eye_model.h5`) and `alarm.mpeg` in the project root alongside `detect_drowsy.py`.
-2. Connect a webcam and ensure no other app is using it.
-3. Run the detector:
-
-	```bash
-	python detect_drowsy.py
-	```
-
-4. Observe the live preview window:
-	- HUD shows current eye state and consecutive closed-frame count.
-	- Close the window or press `q` to stop.
-
-## Troubleshooting
-- **Webcam not working:** Confirm the correct camera index in `cv2.VideoCapture(0)` or allow camera permissions.
-- **TensorFlow layer errors:** Keep both `.keras` and `.h5` versions of the model in root so the deserialization shim can fall back.
-- **Audio not playing:** Verify default system output device and that `alarm.mpeg` path is correct.
-
-## Training
-- The `model_training.ipynb` notebook contains the CNN training workflow if you need to retrain or fine-tune the eye classifier.
+### Debug Mode (The Domain Shift Fix)
+By default, `DEBUG_MODE = True` in the detector. A second window will open showing exactly what the AI sees (the Left Eye, Right Eye, and Mouth). 
+If these images don't look like the dataset you trained on, you can tweak the `padding_ratio` in `extract_and_preprocess()`.
