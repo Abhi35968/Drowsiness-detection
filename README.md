@@ -11,6 +11,12 @@ This project solves the "Domain Shift" problem (where a model trains well but fa
     *   `explore_config.py`: Debugging tool to inspect model layer architecture.
 *   `requirements.txt`: Dependencies for the project.
 
+## 📊 Dataset Information
+The model was trained on a combined dataset of over **90,000 images** to ensure high accuracy and robustness against different lighting conditions:
+*   **MRL Eye Dataset**: Used for training eye-state detection (Open vs. Closed).
+*   **Yawning Dataset**: Used for detecting mouth states related to drowsiness.
+*   **Preprocessing**: All images were resized to 96x96 and normalized to the [-1, 1] range to match the MobileNetV2 architecture.
+
 ## 1. Cloud Training
 To train the models without freezing your PC, use Google Colab or Kaggle:
 1. Open Google Colab and set Runtime to GPU.
